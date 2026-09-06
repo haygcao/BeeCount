@@ -9,6 +9,9 @@ export 'database_providers.dart';
 // 统计相关
 export 'statistics_providers.dart';
 
+// 多币种相关
+export 'currency_providers.dart';
+
 // 同步相关
 export 'sync_providers.dart';
 
@@ -29,3 +32,9 @@ export 'language_provider.dart';
 
 // 小组件相关
 export 'widget_provider.dart';
+
+// 标签相关
+export 'tag_providers.dart';
+
+// 智能记账相关
+export 'smart_billing_providers.dart';

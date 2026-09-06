@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../providers.dart';
 import '../../data/db.dart';
 import '../../l10n/app_localizations.dart';
+import '../../utils/account_type_utils.dart';
 
 /// 账户选择器数据模型
 class AccountOption {
@@ -61,45 +62,6 @@ class _AccountPickerState extends ConsumerState<AccountPicker> {
   List<AccountOption> _options = [];
   bool _initialized = false;
 
-  IconData _getIconForType(String type) {
-    switch (type) {
-      case 'cash':
-        return Icons.payments_outlined;
-      case 'bank_card':
-        return Icons.credit_card;
-      case 'credit_card':
-        return Icons.credit_score;
-      case 'alipay':
-        return Icons.currency_yuan;
-      case 'wechat':
-        return Icons.chat;
-      case 'other':
-        return Icons.account_balance_outlined;
-      default:
-        return Icons.account_balance_wallet_outlined;
-    }
-  }
-
-  String _getTypeLabel(BuildContext context, String type) {
-    final l10n = AppLocalizations.of(context);
-    switch (type) {
-      case 'cash':
-        return l10n.accountTypeCash;
-      case 'bank_card':
-        return l10n.accountTypeBankCard;
-      case 'credit_card':
-        return l10n.accountTypeCreditCard;
-      case 'alipay':
-        return l10n.accountTypeAlipay;
-      case 'wechat':
-        return l10n.accountTypeWechat;
-      case 'other':
-        return l10n.accountTypeOther;
-      default:
-        return type;
-    }
-  }
-
   void _buildOptions(List<Account> accounts) {
     if (_initialized) return;
 
@@ -121,7 +83,7 @@ class _AccountPickerState extends ConsumerState<AccountPicker> {
         id: account.id,
         name: account.name,
         type: account.type,
-        icon: _getIconForType(account.type),
+        icon: getIconForAccountType(account.type),
       ));
     }
 
@@ -145,12 +107,21 @@ class _AccountPickerState extends ConsumerState<AccountPicker> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    final ledgerId = ref.watch(currentLedgerIdProvider);
-    final accountsAsync = ref.watch(accountsStreamProvider(ledgerId));
+    // v1.15.0: 获取当前账本币种
+    final currentLedgerAsync = ref.watch(currentLedgerProvider);
+    final currentCurrency = currentLedgerAsync.asData?.value?.currency ?? 'CNY';
+
+    // v1.15.0: 获取所有账户并按币种筛选
+    final allAccountsAsync = ref.watch(allAccountsStreamProvider);
     final primaryColor = Theme.of(context).primaryColor;
 
-    return accountsAsync.when(
-      data: (accounts) {
+    return allAccountsAsync.when(
+      data: (allAccounts) {
+        // 只显示与当前账本同币种的可交易账户
+        final accounts = allAccounts.where((account) =>
+          account.currency == currentCurrency && isTradableType(account.type)
+        ).toList();
+
         _buildOptions(accounts);
 
         return SafeArea(
@@ -272,11 +243,12 @@ class _AccountPickerState extends ConsumerState<AccountPicker> {
                   : primaryColor.withValues(alpha: 0.12),
               shape: BoxShape.circle,
             ),
-            child: Icon(
-              option.icon,
-              color: isNone ? Colors.grey[600] : primaryColor,
-              size: 24,
-            ),
+            child: isNone
+                ? Icon(option.icon, color: Colors.grey[600], size: 24)
+                : AccountTypeIcon(
+                    type: option.type,
+                    size: 24,
+                  ),
           ),
           const SizedBox(width: 16),
 
@@ -298,7 +270,7 @@ class _AccountPickerState extends ConsumerState<AccountPicker> {
                 if (!isNone) ...[
                   const SizedBox(height: 4),
                   Text(
-                    _getTypeLabel(context, option.type),
+                    getAccountTypeLabel(context, option.type),
                     style: TextStyle(
                       fontSize: 14,
                       color: Colors.grey[600],

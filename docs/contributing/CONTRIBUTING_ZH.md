@@ -73,6 +73,29 @@
 - 图标设计
 - 截图和宣传素材
 
+#### 🎨 招募设计师 {#designer-recruitment}
+
+**我们正在寻找有才华的 UI/UX 设计师加入蜜蜂记账项目！**
+
+📐 **参与内容：**
+
+- 重新设计应用 UI 和交互体验
+- 设计主题皮肤和插画元素
+- 优化用户界面的视觉一致性
+- 创建现代化、简洁的设计语言
+
+🎁 **你将获得：**
+
+- 开源项目作品集积累
+- 在 README 和应用中署名
+- 与开发团队密切合作的机会
+- 为数千用户打造优质体验的成就感
+
+💌 **联系方式：**
+
+- GitHub Issues: [提交设计建议](https://github.com/TNT-Likely/BeeCount/issues)
+- Telegram: [加入讨论群](https://t.me/beecount)
+
 ## 报告 Bug
 
 ### 提交前检查
@@ -544,19 +567,19 @@ Closes #123
 
 ## 翻译贡献
 
-蜜蜂记账已支持 9 种语言，欢迎贡献新的语言翻译或改进现有翻译。
+蜜蜂记账官方维护 3 种语言（简体中文、繁体中文、English），并接受社区贡献的其他语言翻译。欢迎贡献新语言或改进现有翻译。
 
 ### 当前支持的语言
+
+**官方维护：**
 
 - 简体中文 (zh)
 - 繁体中文 (zh_Hant)
 - English (en)
-- 日本語 (ja)
-- 한국어 (ko)
-- Español (es)
-- Français (fr)
-- Deutsch (de)
-- Português (pt)
+
+**社区贡献：**
+
+- 한국어 / 韩语 (ko)
 
 ### 添加新语言
 
@@ -680,9 +703,9 @@ git push origin docs/improve-supabase-guide
 
 所有贡献者都会被记录在项目的贡献者列表中。重大贡献会在 Release Notes 中特别感谢。
 
-## 许可证
+## 许可证与贡献者许可条款
 
-通过贡献代码，你同意你的贡献将按照项目的 [MIT License](../../LICENSE) 进行许可。
+本项目采用「个人免费、商业付费」的双许可模式（见 [LICENSE](../../LICENSE)）。通过提交贡献（代码/翻译/文档等），你同意根目录 [CONTRIBUTING.md 中的贡献者许可条款](../../CONTRIBUTING.md#贡献者许可条款contributor-license-terms)：你的贡献以仓库 LICENSE 授权，同时授予项目维护者含商业许可在内的再许可权利；你保留自己贡献的著作权。
 
 ---
 

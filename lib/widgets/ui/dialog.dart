@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../l10n/app_localizations.dart';
+import '../../styles/tokens.dart';
 
 /// 统一弹窗（基础 UI 组件）
 class AppDialog {
@@ -134,6 +135,7 @@ class AppDialog {
     return showDialog<T>(
       context: context,
       builder: (ctx) => AlertDialog(
+        backgroundColor: BeeTokens.surfaceElevated(ctx),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         contentPadding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
         content: ConstrainedBox(
@@ -148,15 +150,17 @@ class AppDialog {
                 title,
                 textAlign: TextAlign.center,
                 style: Theme.of(ctx).textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.w600, color: Colors.black87),
+                    fontWeight: FontWeight.w600, color: BeeTokens.textPrimary(ctx)),
               ),
               const SizedBox(height: 12),
               Flexible(
                 child: SingleChildScrollView(
                   child: Text(
-                    message,
+                    message.replaceAll('\\n', '\n'),  // 处理转义的换行符
                     textAlign: TextAlign.left,
-                    style: Theme.of(ctx).textTheme.bodyMedium,
+                    style: Theme.of(ctx).textTheme.bodyMedium?.copyWith(
+                      color: BeeTokens.textSecondary(ctx),
+                    ),
                   ),
                 ),
               ),

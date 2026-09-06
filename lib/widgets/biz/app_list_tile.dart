@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../../styles/design.dart';
-import '../../styles/colors.dart';
+import '../../styles/tokens.dart';
+import '../ui/feature_dot.dart';
 
 class AppListTile extends StatelessWidget {
   final IconData leading;
@@ -10,6 +10,12 @@ class AppListTile extends StatelessWidget {
   final VoidCallback? onTap;
   final bool enabled;
   final Widget? trailing;
+
+  /// 新功能红点的锚点 id。给了就在图标右上角挂红点,该锚点下没有未读功能时
+  /// 不渲染。放在这里而不是让调用方自己包 [FeatureDot],是因为默认图标那个
+  /// 36×36 圆形容器的样式在这个文件里 —— 让每个调用点去复刻一遍必然走样。
+  final String? dotAnchor;
+
   const AppListTile(
       {super.key,
       required this.leading,
@@ -18,33 +24,40 @@ class AppListTile extends StatelessWidget {
       this.subtitle,
       this.onTap,
       this.enabled = true,
-      this.trailing});
+      this.trailing,
+      this.dotAnchor});
+
+  Widget _withDot(Widget icon) =>
+      dotAnchor == null ? icon : FeatureDot(anchor: dotAnchor!, child: icon);
 
   @override
   Widget build(BuildContext context) {
-    final titleStyle = AppTextTokens.title(context)
-        .copyWith(color: BeeColors.primaryText); // 已下调为 400
-    final subStyle = AppTextTokens.label(context);
+    final titleStyle = BeeTextTokens.title(context)
+        .copyWith(color: BeeTokens.textPrimary(context)); // ⭐ 使用 Token
+    final subStyle = BeeTextTokens.label(context)
+        .copyWith(color: BeeTokens.textSecondary(context)); // ⭐ 使用 Token
     final tile = Padding(
       padding: const EdgeInsets.symmetric(vertical: 6),
       child: Row(
         children: [
-          leadingWidget ??
-              Container(
-                width: 36,
-                height: 36,
-                decoration: BoxDecoration(
-                  color: Theme.of(context)
-                      .colorScheme
-                      .primary
-                      .withValues(alpha: 0.12),
-                  shape: BoxShape.circle,
+          _withDot(
+            leadingWidget ??
+                Container(
+                  width: 36,
+                  height: 36,
+                  decoration: BoxDecoration(
+                    color: Theme.of(context)
+                        .colorScheme
+                        .primary
+                        .withValues(alpha: 0.12),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    leading,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
                 ),
-                child: Icon(
-                  leading,
-                  color: Theme.of(context).colorScheme.primary,
-                ),
-              ),
+          ),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
@@ -65,7 +78,7 @@ class AppListTile extends StatelessWidget {
           if (trailing != null)
             trailing!
           else if (enabled)
-            const Icon(Icons.chevron_right, color: Colors.black38),
+            Icon(Icons.chevron_right, color: BeeTokens.iconTertiary(context)), // ⭐ 使用 Token
         ],
       ),
     );

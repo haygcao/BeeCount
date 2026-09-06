@@ -1,330 +1,232 @@
-# BeeCount
+# BeeCount &nbsp; [中文](README.md)
 
 <div align="center">
 
 ![GitHub stars](https://img.shields.io/github/stars/TNT-Likely/BeeCount?style=social)
 ![License](https://img.shields.io/badge/license-Business%20Source%20License-orange.svg)
-![Platform](https://img.shields.io/badge/platform-Android%20%7C%20iOS%20%7C%20HarmonyOS-lightgrey.svg)
+![Release](https://img.shields.io/github/v/release/TNT-Likely/BeeCount?label=latest&color=green)
+![Downloads](https://img.shields.io/github/downloads/TNT-Likely/BeeCount/total?color=blue)
+![Last commit](https://img.shields.io/github/last-commit/TNT-Likely/BeeCount)
 ![Flutter](https://img.shields.io/badge/Flutter-3.27%2B-02569B?logo=flutter)
-![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg)
 
-**Your Data, Your Control - Open Source Accounting App**
+**Your Data, Your Control — Open Source Accounting App**
 
-**Core Advantage: Self-hosted Supabase/WebDAV servers - Your data, Your control**
+Sync via BeeCount Cloud (self-hosted) / iCloud / Supabase / WebDAV / S3
 
-[📥 Download APK](https://github.com/TNT-Likely/BeeCount/releases/latest) | [📖 Documentation](#-user-guide) | [💝 Donate](#-donate) | [💬 Issues](https://github.com/TNT-Likely/BeeCount/issues) | [💬 Telegram Group](https://t.me/beecount) | [🇨🇳 中文](README.md)
+<br/>
+
+<a href="https://apps.apple.com/app/id6754611670">
+  <img src="https://img.shields.io/badge/App%20Store-000000?style=for-the-badge&logo=app-store&logoColor=white" alt="Download on App Store" height="64"/>
+</a>
+<a href="https://play.google.com/store/apps/details?id=com.tntlikely.beecount">
+  <img src="https://img.shields.io/badge/Google%20Play-414141?style=for-the-badge&logo=google-play&logoColor=white" alt="Get it on Google Play" height="64"/>
+</a>
+<a href="https://github.com/TNT-Likely/BeeCount-Cloud/blob/main/README.en.md">
+  <img src="https://img.shields.io/badge/Web%20(Self--Hosted)-4A90E2?style=for-the-badge&logo=docker&logoColor=white" alt="Self-host Web" height="64"/>
+</a>
+
+<br/>
+<br/>
+
+[🌐 Website](https://count.beejz.com/en/) · [📖 Docs](https://count.beejz.com/en/docs/intro) · [💝 Donate](#-donate) · [💬 Telegram](https://t.me/beecount) · [📦 APK](https://github.com/TNT-Likely/BeeCount/releases/latest) · [🚀 TestFlight](https://testflight.apple.com/join/Eaw2rWxa)
 
 </div>
 
 ---
 
-> ## 🎉 Great News
->
-> **iOS Version Submitting to App Store!**
->
-> 🍎 Beta version available via **[TestFlight](https://testflight.apple.com/join/Eaw2rWxa)**
->
-> **HarmonyOS Version Coming Soon!**
->
-> 📱 **Supports HarmonyOS 5.0+** - [HarmonyOS Repository](https://github.com/TNT-Likely/beecount-openharmony)
+> 🤖 **New: [MCP](https://count.beejz.com/en/docs/mcp) support** — pair with [BeeCount Cloud](https://github.com/TNT-Likely/BeeCount-Cloud) to drive your ledger from any MCP client.
 
 ---
 
-## 💡 Why Choose BeeCount?
+## 💡 Why BeeCount
 
-<table>
-<tr>
-<td width="50%">
+A lightweight, open-source, privacy-first **personal finance** and **expense tracking** app.
 
-### 🔒 Problems with Traditional Apps
-- ❌ Data stored on third-party servers
-- ❌ Privacy risks, data may be analyzed
-- ❌ Data loss if service shuts down
-- ❌ Premium features behind paywalls
-- ❌ Forced ads and loan recommendations
-- ❌ Closed-source, cannot audit code
+| Traditional apps | BeeCount |
+|---|---|
+| ❌ Data on third-party servers, no audit | ✅ **Fully open-source**, code auditable |
+| ❌ Privacy may be analyzed and exploited | ✅ **Offline-first** + self-hosted, developer can't access your data |
+| ❌ Service shutdown = data loss | ✅ **Data sovereignty**, choose from 5 sync options |
+| ❌ Premium features behind paywalls | ✅ **Completely free** (including AI / OCR / voice input) |
+| ❌ Ads / financial product recommendations | ✅ **Zero ads / zero tracking / zero data collection** |
 
-</td>
-<td width="50%">
+> **Platform support**: 🤖 Android 5.0+ · 🍎 iOS 15.5+ · 🌐 Web (built into BeeCount Cloud, see below)
+>
+> ~~📱 HarmonyOS — [Discontinued](https://github.com/TNT-Likely/beecount-openharmony)~~
 
-### ✅ BeeCount Advantages
-- ✅ **Self-hosted**, complete data control
-- ✅ **Open source**, auditable code
-- ✅ **Offline-first**, works without network
-- ✅ **Free for personal use**, no ads or paywalls
-- ✅ **Privacy-first**, developers cannot access your data
-- ✅ **Open source code**, auditable codebase
+---
 
-</td>
-</tr>
-</table>
-
-A lightweight, open-source, privacy-focused **personal finance management** and **expense tracker** app for iOS/Android. Features complete ledger management, **income and expense tracking**, category statistics, **chart analysis**, data import/export, and self-hosted Supabase/WebDAV cloud sync. Perfect for privacy-conscious individuals and families to manage daily **spending** and **budget tracking**.
-
-## 📱 Core Features Showcase
-
-<div align="center">
-  <img src="demo/preview/en/01-home.png" alt="Home Screen" width="200" />
-  <img src="demo/preview/en/04-chart-analysis.png" alt="Chart Analysis" width="200" />
-  <img src="demo/preview/en/11-cloud-service.png" alt="☁️ Cloud Service - Core Feature" width="200" />
-  <img src="demo/preview/en/05-ledger-management.png" alt="Ledger Management" width="200" />
-</div>
+## 🌟 Core Features
 
 <details>
-<summary>📸 View More Screenshots</summary>
+<summary><b>🤖 AI-Powered</b> — AI assistant / OCR / voice / auto-capture from screenshots</summary>
 
-### Data Management
+- **AI Assistant** — Natural language conversation, intent recognition, powered by Zhipu GLM-4
+- **OCR Photo Capture** — Dual engines (local TFLite + GLM cloud), recognizes Alipay/WeChat/UnionPay screenshots
+- **Voice Input** — Hold to speak, GLM models understand colloquial expressions
+- **Auto Capture from Screenshots** — Android accessibility service / iOS Shortcuts back-tap
+
+</details>
+
+<details>
+<summary><b>📝 Bookkeeping</b> — multi-ledger / accounts / categories / budgets / recurring / tags / charts / import-export</summary>
+
+- **Multi-ledger** — Separate ledgers for life/work/investment, each with its own currency
+- **Multiple accounts** — Cash/card/credit, transfer auto-updates both balances
+- **Two-tier categories** — Parent-child hierarchy
+- **Budgets** — Total + category budgets, overspending alerts
+- **Recurring transactions** — Daily/weekly/monthly/yearly auto-records for fixed income/expenses
+- **Tags** — Multi-tag with color labels for flexible filtering
+- **Charts** — Monthly reports / category rankings / trends / annual report
+- **Import/Export** — CSV (Alipay/WeChat bills) + YAML config
+
+</details>
+
+<details>
+<summary><b>🎨 Experience</b> — dark mode / multi-language / home widgets / theming</summary>
+
+- **Dark mode** — Pure black + theme accent borders, OLED-friendly
+- **Multi-language** — official Simplified/Traditional Chinese & English, community-contributed Korean, with localized formatting
+- **Home widgets** — 6 types × 12 variants (overview / net assets / quick add / budget / recent / dashboard), dark-mode, multi-language & theme-color aware, [see the full lineup](#home-widgets)
+- **Theme customization** — Multiple primary colors
+
+</details>
+
+---
+
+## 📸 Screenshots
+
 <div align="center">
-  <img src="demo/preview/en/02-search.png" alt="Smart Search" width="200" />
-  <img src="demo/preview/en/03-edit-transaction.png" alt="Edit Transaction" width="200" />
-  <img src="demo/preview/en/07-category-detail.png" alt="Category Details" width="200" />
-  <img src="demo/preview/en/08-category-migration.png" alt="Category Migration" width="200" />
+  <img src="demo/videos/en/01-add-transaction.gif" alt="Add transaction" width="200" />
+  <img src="demo/videos/en/02-ocr-recognition.gif" alt="AI OCR" width="200" />
+  <img src="demo/videos/en/04-data-analysis.gif" alt="Analytics" width="200" />
 </div>
 
-### Personalization & Management
+### Home Widgets
+
+6 content types × 12 variants — check your books and add records right from the home screen:
+
+<details>
+<summary>View the widget lineup (6 types × 12 variants)</summary>
+
 <div align="center">
-  <img src="demo/preview/en/06-profile.png" alt="Profile" width="200" />
-  <img src="demo/preview/en/09-category-management.png" alt="Category Management" width="200" />
-  <img src="demo/preview/en/10-personalization.png" alt="Personalization" width="200" />
-  <img src="demo/preview/en/12-import-confirm.png" alt="Import Confirmation" width="200" />
+  <img src="demo/widgets/widgets-showcase-en.png" alt="Home widget lineup: overview / net assets / quick add / budget / recent transactions / dashboard" width="820" />
 </div>
 
 </details>
 
-## 🌟 Key Features
+<details>
+<summary>More screenshots (9 themes / dark mode)</summary>
 
-### ☁️ Self-Hosted Cloud Service - Core Differentiator
-
-> **This is BeeCount's biggest feature: Complete control over your data!**
-
-| Solution | Best For | Features |
-|----------|----------|----------|
-| **Supabase** | Users without NAS | Free tier sufficient, easy setup, cloud-hosted |
-| **WebDAV** | Users with NAS | Fully localized data, supports Synology/UGREEN/Nextcloud |
-
-**Why Self-Hosted?**
-- 🔐 **Privacy First**: Developers cannot access your data
-- 💰 **Cost Effective**: Supabase free tier sufficient, WebDAV one-time investment
-- 🛡️ **Data Security**: No worries about service shutdowns or data breaches
-- 🔓 **Open Source**: All cloud sync code is open source and auditable
-
-[📖 View Cloud Service Setup Guide](#️-cloud-backup-configuration-optional)
-
-### 🔒 Data Security & Privacy
-
-- **Offline First**: Based on local SQLite, works without network
-- **Open & Transparent**: Open source code, auditable
-- **Optional Sync**: Works completely without cloud configuration
-- **Zero Tracking**: No analytics, no ads, no data collection
-
-### 📊 Complete Accounting Features
-
-- **Smart Accounting**: Income/expense categories, amounts, dates, notes
-- **Multi-Ledger Management**: Separate management for personal, work, investment
-- **Chart Analysis**: Monthly reports, category rankings, trend analysis
-- **Data Import/Export**: CSV format, compatible with mainstream apps
-- **Home Screen Widgets**: iOS/Android widgets for quick overview of income and expenses
-
-### 🎨 Personalization & Internationalization
-
-- **Theme Customization**: Multiple theme colors for personalized style
-- **9 Languages**: Simplified Chinese, Traditional Chinese, English, 日本語, 한국어, Español, Français, Deutsch
-  - Complete UI translation + smart category mapping
-  - Localized date/number formats
-  - CSV import auto-recognizes multi-language categories
-
-> 💡 Want to add a new language? Welcome to create an [Issue](https://github.com/TNT-Likely/BeeCount/issues)!
-
-## 🚀 Quick Start
-
-### 📥 Option 1: Direct Download (Recommended)
+### 9 Core Themes
 
 <div align="center">
-
-[![Download Android APK](https://img.shields.io/badge/Download_Android_APK-Latest_Version-brightgreen?style=for-the-badge&logo=android)](https://github.com/TNT-Likely/BeeCount/releases/latest)
-[![Join iOS TestFlight](https://img.shields.io/badge/Join_iOS_TestFlight-Beta_Version-blue?style=for-the-badge&logo=apple)](https://testflight.apple.com/join/Eaw2rWxa)
-
+  <img src="preview/store-en/01-home.png" alt="Home" width="200" />
+  <img src="preview/store-en/02-open-source.png" alt="Cloud Service" width="200" />
+  <img src="preview/store-en/03-analytics.png" alt="Analytics" width="200" />
 </div>
 
-**Android Users:**
+<div align="center">
+  <img src="preview/store-en/04-ai.png" alt="AI Smart Logging" width="200" />
+  <img src="preview/store-en/05-add.png" alt="Quick Entry" width="200" />
+  <img src="preview/store-en/06-ledgers.png" alt="Multi-Ledger" width="200" />
+</div>
 
-1. Click the button above to go to [Releases](https://github.com/TNT-Likely/BeeCount/releases) page
-2. Download the latest `app-prod-release-*.apk` file
-3. Install and start using (default local mode, no configuration needed)
+<div align="center">
+  <img src="preview/store-en/07-tags.png" alt="Color Tags" width="200" />
+  <img src="preview/store-en/08-accounts.png" alt="Net Worth" width="200" />
+  <img src="preview/store-en/09-mine.png" alt="Settings" width="200" />
+</div>
 
-**iOS Users:**
+### Dark Mode
 
-1. Install [TestFlight](https://apps.apple.com/app/testflight/id899247664) on your iPhone/iPad
-2. Click [TestFlight Beta Link](https://testflight.apple.com/join/Eaw2rWxa) to join
-3. Install BeeCount from TestFlight
+<div align="center">
+  <img src="preview/dark/01-home.png" alt="Home dark" width="200" />
+  <img src="preview/dark/02-chart-analysis.png" alt="Charts dark" width="200" />
+  <img src="preview/dark/04-profile.png" alt="Profile dark" width="200" />
+  <img src="preview/dark/05-ai-chat.png" alt="AI chat dark" width="200" />
+</div>
 
-### 🔨 Option 2: Build from Source
+</details>
 
-```bash
-# Clone the project
-git clone https://github.com/TNT-Likely/BeeCount.git
-cd BeeCount
+---
 
-# Install dependencies
-flutter pub get
-dart run build_runner build -d
+## ☁️ Sync Options
 
-# Run the app
-flutter run --flavor dev -d android
-```
+BeeCount offers 5 sync options. Your data, your control. **See [docs/cloud-setup_EN.md](docs/cloud-setup_EN.md) for full setup guides.**
 
-## 📖 User Guide
+| Option | Best For | Highlights |
+|---|---|---|
+| **BeeCount Cloud** | Real-time multi-device + self-hosted + multi-user co-write | One-click Docker, sub-second sync, built-in Web, multi-user, **shared ledgers** |
+| **iCloud** | iOS-only users | Zero config, native integration |
+| **Supabase** | Cross-platform without NAS | Generous free tier, easy setup |
+| **WebDAV** | NAS users | Local data, Synology/UGREEN/Nextcloud |
+| **S3 protocol** | Flexible cloud storage | Cloudflare R2/AWS S3/MinIO, large free tier |
 
-### Basic Operations
+> 🔐 **Why self-host?** Privacy first, cost control, data security, fully open-source. All sync code is auditable.
 
-- **Add Transaction**: Tap the "+" button at the bottom of the home screen
-- **Edit Record**: Tap any transaction record to enter edit page
-- **Delete Record**: Long press transaction record to select delete
-- **Switch Months**: Tap the date at the top or scroll up/down in the list to flip pages
-- **Hide Amounts**: Tap the eye icon in the top right of the home screen
+---
 
-### Data Management
+## 🆕 BeeCount Cloud (Self-hosted)
 
-- **Import Data**: Profile → Import Data → Select CSV file
-- **Export Backup**: Profile → Export Data → Select export format
-- **Category Management**: Profile → Category Management → Add/Edit/Delete categories
-- **Ledger Switching**: Bottom navigation → Ledgers → Select or create new ledger
+> **Sub-second multi-device sync + Web admin + multi-user isolation + AES-256 encrypted backup** — Recommended for users with NAS / VPS / Docker.
 
-## ☁️ Cloud Backup Configuration (Optional)
+### Highlights
 
-### Why Choose Self-Hosted Cloud Service?
+- 📱 **Real-time multi-device** — Phone A makes a change, Phone B and Web see it within seconds (WebSocket)
+- 🌐 **Built-in Web admin** — One Docker image = server + web; open server URL to use
+- 👥 **Multi-user isolation** — One server, many user accounts, each only sees their own data
+- 🤝 **Shared ledgers** — Owner generates an invite code; family / team join the same book. Owner / Editor roles, realtime sync, every transaction tagged with creator + last editor, plus member balance stats. iOS / Android / Web all supported.
+- 🔐 **AES-256 encrypted backup** — Multi-remote fan-out (R2 / S3 / WebDAV / B2), AES zip encryption — recoverable with standard tools even without the service
 
-- **Data Sovereignty**: Data completely stored in servers or cloud platforms you control
-- **Privacy Protection**: Developers cannot access any of your data
-- **Cost Control**: Most solutions offer free tiers or one-time purchase options
-- **Stable & Reliable**: No dependency on third-party hosting services, full control
-- **Flexible Choice**: Choose the most suitable solution based on your needs
+### Deploy + Full Documentation
 
-### Option 1: Custom Supabase (Recommended for Beginners)
+Full Docker Compose deployment, backup system, PWA, and ops details live in the Cloud repo:
 
-**Use Case**: Suitable for users without NAS devices who want to get started quickly
+**[👉 BeeCount-Cloud repo — One-click Docker deploy + full docs](https://github.com/TNT-Likely/BeeCount-Cloud)**
 
-**Configuration Steps**:
+### Web Admin Preview
 
-1. **Create Supabase Project**
-   - Visit [supabase.com](https://supabase.com) to register an account
-   - Create a new project, select appropriate region
-   - Get URL and anon key from project settings
+<div align="center">
+  <img src="preview/web/en-01-home.png" alt="Web home" width="600" />
+  <br/>
+  <sub>💰 Home: income/expense, asset breakdown, category heatmap, trends — at a glance (dark mode)</sub>
+</div>
 
-2. **Configure Storage**
-   - Create a Storage Bucket named `beecount-backups` in Supabase console
-   - Set as Private (uncheck Public bucket)
-   - **Configure RLS Access Policies**: Create 4 policies to ensure users can only access their own data
-     - Go to the bucket's Policies tab
-     - Create the following 4 policies (each with the same configuration):
-       - **SELECT**: Allow users to read their own backup files
-       - **INSERT**: Allow users to create new backup files
-       - **UPDATE**: Allow users to update their own backup files
-       - **DELETE**: Allow users to delete their own backup files
-     - Configuration for each policy:
-       - **Policy name**: Customizable (e.g., `Allow user access to own backups`)
-       - **Target roles**: Select `authenticated`
-       - **Policy definition**: Enter the following expression
-         ```sql
-         ((bucket_id = 'beecount-backups'::text) AND ((storage.foldername(name))[1] = 'users'::text) AND ((storage.foldername(name))[2] = (auth.uid())::text))
-         ```
-       - This policy ensures users can only access files under `beecount-backups/users/<their-user-id>/` path
+<details>
+<summary>More Web screenshots</summary>
 
-3. **App Configuration**
-   - Open BeeCount → Profile → Cloud Service
-   - Tap "Add Custom Cloud Service"
-   - Select service type: **Supabase**
-   - Enter your Supabase URL and anon key
-   - Save and enable configuration
-   - Tap "Login", register/sign in and start syncing
+<div align="center">
+  <img src="preview/web/en-02-transactions.png" alt="Web transactions" width="600" />
+  <br/>
+  <sub>📒 Transactions: keyword / category / account / date / tag multi-filter</sub>
+</div>
 
-### Option 2: WebDAV Server (Recommended for NAS Users)
+<br/>
 
-**Use Case**: For users with NAS devices or private cloud storage
+<div align="center">
+  <img src="preview/web/en-03-devices.png" alt="Web devices" width="600" />
+  <br/>
+  <sub>📱 Online devices + backup archive management</sub>
+</div>
 
-**Supported Services**:
-- ✅ UGREEN Cloud NAS
-- ✅ Synology NAS
-- ✅ Nextcloud
-- ✅ Nutstore WebDAV
-- ✅ ownCloud
-- ✅ Any server supporting WebDAV protocol
+</details>
 
-**Configuration Steps**:
+---
 
-1. **Enable WebDAV Service**
-   - Enable WebDAV functionality on your NAS or cloud storage platform
-   - Note the WebDAV server address (e.g., `http://nas.local:5005`)
-   - Create or use existing user account
+## 🛠️ Development
 
-2. **Prepare Storage Directory** (Optional)
-   - Create a `BeeCount` folder in WebDAV root directory
-   - Or use any path (specify during configuration)
-
-3. **App Configuration**
-   - Open BeeCount → Profile → Cloud Service
-   - Tap "Add Custom Cloud Service"
-   - Select service type: **WebDAV**
-   - Fill in configuration:
-     - **WebDAV Server URL**: e.g., `http://nas.local:5005`
-     - **Username**: Your WebDAV username
-     - **Password**: Your WebDAV password
-     - **Remote Path**: Storage path (e.g., `/home/BeeCount` or `/BeeCount`)
-   - Tap "Test Connection" to verify configuration
-   - Save and enable configuration
-   - WebDAV requires no additional login, can sync directly after configuration
-
-**Common WebDAV Configuration Examples**:
-
-```
-UGREEN Cloud NAS:
-- URL: http://your-nas-address:5005
-- Remote Path: /home/BeeCount
-
-Synology NAS:
-- URL: http://your-nas-address:5005 or https://your-domain
-- Remote Path: /BeeCount
-
-Nutstore:
-- URL: https://dav.jianguoyun.com/dav/
-- Remote Path: /BeeCount
-```
-
-### Future Plans
-
-We will continue expanding cloud service support, planning to add:
-- 📦 Alibaba Cloud OSS
-- 📦 Tencent Cloud COS
-- 📦 AWS S3
-- 📦 Google Drive
-- 📦 Dropbox
-- 📦 More...
-
-If you'd like to prioritize support for a specific cloud service, welcome to create a feature request in [Issues](https://github.com/TNT-Likely/BeeCount/issues)!
-
-## 🛠️ Development Guide
+<details>
+<summary>Tech stack + quick start</summary>
 
 ### Tech Stack
 
-- **Flutter 3.27+**: Cross-platform UI framework
-- **Riverpod**: State management solution
-- **Drift (SQLite)**: Local database ORM
-- **Supabase**: Cloud backup and sync service
+- **Flutter 3.27+** · Cross-platform UI framework
+- **Riverpod** · State management
+- **Drift (SQLite)** · Local database ORM
+- **Supabase / Self-hosted BeeCount Cloud / WebDAV / S3** · Multi-option cloud sync
 
-### Project Structure
-
-```
-lib/
-├── data/           # Data models and database operations
-├── pages/          # Application pages
-├── widgets/        # Reusable components
-├── cloud/          # Cloud service integration
-├── l10n/           # Internationalization resources
-├── providers/      # Riverpod state providers
-└── utils/          # Utility functions
-```
-
-### Development Commands
+### Quick Start
 
 ```bash
 # Install dependencies
@@ -333,186 +235,152 @@ flutter pub get
 # Code generation
 dart run build_runner build --delete-conflicting-outputs
 
-# Run tests
-flutter test
+# Run app
+flutter run --flavor dev
 
-# Build release version
+# Build release
 flutter build apk --flavor prod --release
 ```
 
-### Contribution Guidelines
+See [docs/contributing/CONTRIBUTING.md](docs/contributing/CONTRIBUTING.md) for development conventions.
 
-We welcome all forms of contributions! Please see our detailed [Contributing Guide](docs/contributing/CONTRIBUTING_EN.md) to learn how to participate:
+</details>
 
-- 🐛 [Report Bugs](https://github.com/TNT-Likely/BeeCount/issues/new)
-- 💡 [Suggest Features](https://github.com/TNT-Likely/BeeCount/discussions/new?category=ideas)
-- 💻 [Contribute Code](docs/contributing/CONTRIBUTING_EN.md#code-contribution-workflow)
-- 🌍 [Contribute Translations](docs/contributing/CONTRIBUTING_EN.md#translation-contributions)
-- 📝 [Improve Documentation](docs/contributing/CONTRIBUTING_EN.md#documentation-contributions)
+---
 
-**Quick Start**:
+## 🤝 Contributing
 
-1. Fork this project
-2. Create feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit changes (`git commit -m 'feat: add some feature'`)
-4. Push to branch (`git push origin feature/AmazingFeature`)
-5. Create Pull Request
+<details>
+<summary>All contributions welcome</summary>
 
-For detailed standards, please refer to the [Complete Contributing Guide](docs/contributing/CONTRIBUTING_EN.md).
+- 🐛 [Report a bug](https://github.com/TNT-Likely/BeeCount/issues/new)
+- 💡 [Feature request](https://github.com/TNT-Likely/BeeCount/discussions/new?category=ideas)
+- 💻 [Code](docs/contributing/CONTRIBUTING.md#code-contribution-flow) · 🌍 [Translation](docs/contributing/CONTRIBUTING.md#translation-contributions) · 📝 [Docs](docs/contributing/CONTRIBUTING.md#documentation-contributions) · 🎨 [Designer recruitment](docs/contributing/CONTRIBUTING.md#designer-recruitment)
 
-## 📄 Open Source License
+**Quick start**: Fork → create feature branch → commit → PR. See the [full contributing guide](docs/contributing/CONTRIBUTING.md) for details.
 
-This project uses a Business Source License. Free for personal use, commercial use requires paid authorization. See [LICENSE](LICENSE) for details.
+</details>
 
-## ⚠️ Disclaimer
+---
 
-- This software is provided "as is" without any express or implied warranties
-- Users are responsible for any data loss or financial loss caused by using this software
-- Please ensure legal and compliant use of this software
+## 🎨 Skins
+
+<details>
+<summary>Contribute a skin</summary>
+
+"Theme color + skin = the header banner." Skins come in two kinds: **code skins** (`CustomPainter` drawing gradients / shapes, auto-following the theme color) and **image skins** (an SVG painted edge-to-edge with `BoxFit.cover`, optionally recolored to the theme color via `themed: true`).
+
+Easiest path: copy [`example_skin.svg`](assets/header_skins/example_skin.svg) → drop your SVG into `assets/header_skins/` → register one entry in `lib/styles/header_skins.dart` → add an i18n name and run `flutter gen-l10n`.
+
+**Full spec (SVG requirements + theme recoloring + integration steps): [assets/header_skins/README_EN.md](assets/header_skins/README_EN.md).**
+
+</details>
+
+---
 
 ## 💬 FAQ
 
-**Q: Can I use it normally without configuring cloud services?**
-A: Absolutely! The app uses local storage by default, and all features work normally. You can still export CSV backups at any time.
+<details>
+<summary>Common questions</summary>
 
-**Q: Should I choose Supabase or WebDAV?**
+**Q: Can I use it without configuring cloud services?**
+A: Absolutely! The app uses local storage by default. All features work normally. You can export CSV for backup anytime.
+
+**Q: Which sync option should I pick?**
 A:
-- If you have a NAS device or private cloud, we recommend WebDAV (fully localized data)
-- If you don't have a NAS, we recommend Supabase (free, stable, easy to configure)
-- Both support complete sync functionality, choose based on your needs
+- iOS single device → **iCloud** (zero config)
+- Cross-platform + real-time multi-device → **BeeCount Cloud** (self-hosted, recommended)
+- Cross-platform without NAS → **Supabase / S3**
+- Have a NAS → **WebDAV**
 
-**Q: Why can't I upload after configuring WebDAV?**
-A:
-- Check if WebDAV service is enabled and port is correct
-- Verify username and password are correct
-- Some NAS WebDAV requires specific paths for write access (e.g., UGREEN Cloud requires `/home/` path)
-- Click "Test Connection" button to view detailed error messages
+**Q: How is data security ensured?**
+A: Use your own server / Storage / Bucket. WebDAV and S3 should use HTTPS. BeeCount Cloud backups are AES-256 encrypted by default.
 
-**Q: Can I switch back to default mode after configuring custom cloud service?**
-A: Yes, you can switch anytime. The saved custom configuration won't be lost and can be re-enabled.
+For more details, see [docs/cloud-setup_EN.md](docs/cloud-setup_EN.md) or [Issues](https://github.com/TNT-Likely/BeeCount/issues).
 
-**Q: How to ensure data security?**
-A:
-- Use your own Supabase project or WebDAV server
-- Regularly export CSV backups to local storage
-- Use strong passwords and enable two-factor authentication (if supported)
-- For WebDAV, recommend using HTTPS for encrypted transmission
-
-**Q: What data formats are supported?**
-A: Currently supports CSV format for import/export, compatible with data formats from most mainstream accounting apps.
-
-**Q: How to sync data across multiple devices?**
-A:
-- **Supabase**: Configure same URL and anon key on all devices, log in with same account
-- **WebDAV**: Configure same WebDAV server address and credentials on all devices
+</details>
 
 ---
 
 ## 💝 Donate
 
-### Why We Need Your Support?
+BeeCount is completely free and open-source — **no ads, no paid features**. If you find it useful, buy the developer a coffee ☕ to support continued development.
 
-BeeCount is a **completely free and open-source** project with no ads or paid features. However, to make it available for iOS users, we need an **Apple Developer Account** ($99/year) to sign the app.
+### How to Donate
 
-Your donation will be used for:
-- 📱 **Renew Apple Developer Account** - Keep iOS TestFlight beta accessible ($99/year)
-- 🔧 **Support continuous development and maintenance** - Keep the project actively developed
+[![PayPal](https://img.shields.io/badge/PayPal-Donate-0070BA?logo=paypal&logoColor=white&style=for-the-badge)](https://paypal.me/sunxiaoyes)
 
-### Donation Methods
-
-#### 🌍 International
-
-- **PayPal**: https://paypal.me/sunxiaoyes
-
-#### 🇨🇳 China
-
-<details>
-<summary>Click to view QR codes</summary>
+<details><summary>Alipay / WeChat QR codes</summary>
 
 | Alipay | WeChat Pay |
 |:---:|:---:|
-| ![Alipay](docs/donate/alipay.png) | ![WeChat Pay](docs/donate/wechat.png) |
+| <img src="docs/donate/alipay.png" width="160" alt="Alipay"/> | <img src="docs/donate/wechat.png" width="160" alt="WeChat"/> |
 
 </details>
 
-#### 🪙 Cryptocurrency
+**USDT (TRC20)**: `TKBV69B2AoU67p3vDhnJUbMJtZ1DxuUF5C` · <details><summary>Binance QR code</summary>![Binance](docs/donate/binance.png)</details>
 
-- **USDT (TRC20)**: `TKBV69B2AoU67p3vDhnJUbMJtZ1DxuUF5C`
-- **Binance**:
+### Cost Transparency
 
-<details>
-<summary>Click to view QR code</summary>
+| Item | Amount |
+|---|---|
+| Apple Developer Account renewal | ¥688 / year |
+| Lightweight cloud server (ICP filing) | ¥79 / year |
+| Domain | ¥80 / year |
+| Google Play Developer Account (one-time) | ¥177 |
+| **Annual recurring cost** | **¥847 / year** |
 
-![Binance](docs/donate/binance.png)
+### Supporters
 
-</details>
+| | | | | | | | | | | | | |
+|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
+| <img src="assets/avatars/qiao.svg" width="44"/> | <img src="assets/avatars/rui.svg" width="44"/> | <a href="https://github.com/fishdivinity"><img src="assets/avatars/fishdivinity.png" width="44"/></a> | <img src="assets/avatars/shao.svg" width="44"/> | <img src="assets/avatars/ge.svg" width="44"/> | <img src="assets/avatars/te.svg" width="44"/> | <img src="assets/avatars/wen.svg" width="44"/> | <img src="assets/avatars/anon.svg" width="44"/> | <a href="https://github.com/birdnofoots"><img src="https://github.com/birdnofoots.png" width="44"/></a> | <a href="https://github.com/charieswang72-pro"><img src="https://github.com/charieswang72-pro.png" width="44"/></a> | <a href="https://github.com/542474846"><img src="https://github.com/542474846.png" width="44"/></a> | <a href="https://github.com/JOHN-2025"><img src="https://github.com/JOHN-2025.png" width="44"/></a> | <a href="https://github.com/HowcanoeWang"><img src="https://github.com/HowcanoeWang.png" width="44"/></a> |
+| *Qiao ¥12 | *Rui ¥720 | fishdivinity ¥100 | *Shao ¥15 | *Ge ¥6 | *Te ¥15 | *Wen ¥50 | Anonymous ¥50 | birdnofoots ¥10 | Charies ¥10 | 542474846 ¥66 | JOHN-2025 ¥30 | HowcanoeWang ¥98 |
 
-### 📊 Funding Progress
-
-- 🎯 **Goal**: $99 (Apple Developer Account annual fee)
-- 💰 **Raised**: ¥732 (≈ $101)
-- 📈 **Progress**: 101.67% ✅
-
-```
-Progress: [██████████] 101.67% - 🎉 Goal Achieved!
-```
-
-**Completed**:
-- ✅ Apple Developer Account registration ($99/year)
-- ✅ iOS TestFlight public beta launched
-
-**Ongoing Costs**:
-- 📱 Apple Developer Account renewal: $99/year
-
-**🚀 Next Steps**:
-- Preparing to submit to Apple App Store
-- Developing HarmonyOS native version
-
-### 🌟 Special Thanks to Our Supporters
-
-Thank you to the following generous supporters (in chronological order):
-
-<!--
-After donating, please leave a message in Issues or send an email, and we'll add you to the list
-Format: Nickname - Amount - Date
--->
-
-- **\*Qiao** - ¥12 - 2025-10-27 (WeChat)
-- **\*Rui** - ¥720 - 2025-10-27 (WeChat) 🎉
+> 💡 Already donated? [Submit info](https://github.com/TNT-Likely/BeeCount/issues/new?template=donation_info.yml) to be displayed in the list.
 
 ---
 
-## 📜 License
+## 📄 License
 
-This project is licensed under the **Business Source License**:
+This project uses the **Business Source License (BSL)**.
 
-- ✅ **Personal Use** - Completely Free
-- ✅ **Learning & Research** - Completely Free
-- ✅ **Open Source Contribution** - Welcome
-- ❌ **Commercial Use** - Paid License Required
+| Use Case | License |
+|---|---|
+| ✅ **Personal / learning / open-source contribution** | Completely free |
+| ❌ **Commercial use** | Requires paid license |
 
-### What is Commercial Use?
+<details>
+<summary>What counts as commercial use</summary>
 
-Commercial license is required for:
-- Providing this software as part of commercial products or services
-- Using this software in for-profit organizations
-- Developing commercial products based on this software
-- Providing paid cloud services based on this software
+- Providing this software as a commercial product or service to customers
+- Using it in a for-profit organization
+- Building commercial products on top of this software
+- Offering paid cloud services based on this software
 
-### How to Obtain a Commercial License?
+For commercial licensing pricing and process, see [COMMERCIAL_LICENSE.md](COMMERCIAL_LICENSE.md) or contact **sunxiaoyes@outlook.com**. See [LICENSE_EN](LICENSE_EN) for details.
 
-For commercial use, please contact us via:
-- 📧 [GitHub Issues](https://github.com/TNT-Likely/BeeCount/issues)
-- 💬 [Telegram Group](https://t.me/beecount)
+</details>
 
-For detailed license terms, please see the [LICENSE](LICENSE) file.
+---
+
+## 📦 Related Repositories
+
+| Repository | Description |
+|---|---|
+| [BeeCount-Cloud](https://github.com/TNT-Likely/BeeCount-Cloud) | Self-hosted sync server + Web admin (FastAPI + React) |
+| [BeeCount-Website](https://github.com/TNT-Likely/BeeCount-Website) | Website / docs repo |
+| [beecount-openharmony](https://github.com/TNT-Likely/beecount-openharmony) | HarmonyOS version (discontinued) |
+| [honeycomb](https://github.com/TNT-Likely/honeycomb) | Claude Code plugin marketplace (skills/agents used for developing this project) |
 
 ---
 
 ## 🙏 Acknowledgments
 
-Thanks to all friends who have contributed code, suggestions, and feedback to the BeeCount project!
+Thanks to [Guhe Bake (Internet Pure Land)](https://www.ghxi.com/) and [Star Mochen](https://mp.weixin.qq.com/s/HieVbKzpdUvnoaCa_9xjkA) for promoting this project.
 
-If you have questions or suggestions, feel free to raise them in [Issues](https://github.com/TNT-Likely/BeeCount/issues) or participate in discussions at [Discussions](https://github.com/TNT-Likely/BeeCount/discussions).
+Thanks to everyone who has contributed code, suggestions, or feedback to BeeCount!
 
-**BeeCount 🐝 - Making Accounting Simple and Secure**
+For questions or suggestions, please raise an [Issue](https://github.com/TNT-Likely/BeeCount/issues) or join the [Discussions](https://github.com/TNT-Likely/BeeCount/discussions).
+
+**BeeCount 🐝 — Making accounting simple and secure**

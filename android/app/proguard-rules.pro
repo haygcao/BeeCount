@@ -1,13 +1,13 @@
 # Keep notification receiver classes
--keep class com.example.beecount.NotificationReceiver { *; }
--keep class com.example.beecount.NotificationClickReceiver { *; }
--keep class com.example.beecount.MainActivity { *; }
+-keep class com.tntlikely.beecount.NotificationReceiver { *; }
+-keep class com.tntlikely.beecount.NotificationClickReceiver { *; }
+-keep class com.tntlikely.beecount.MainActivity { *; }
 
 # Keep all BroadcastReceiver subclasses
 -keep public class * extends android.content.BroadcastReceiver
 
 # Keep notification-related methods
--keepclassmembers class com.example.beecount.** {
+-keepclassmembers class com.tntlikely.beecount.** {
     public void onReceive(android.content.Context, android.content.Intent);
 }
 
@@ -114,3 +114,15 @@
 # Ignore Flutter Play Store related classes
 -dontwarn io.flutter.app.FlutterPlayStoreSplitApplication
 -dontwarn io.flutter.embedding.engine.deferredcomponents.PlayStoreDeferredComponentManager**
+
+# v3.2.1 删 OCR(google_mlkit_text_recognition + GoogleMLKit/TextRecognitionChinese
+# Android/iOS 端依赖)后,这里原本的 mlkit keep / dontwarn 规则全部不再需要,
+# R8 shrinker 也不会再 hit mlkit 类。
+
+# TensorFlow Lite - 暂时注释掉本地模型依赖，只使用云端API
+-dontwarn org.tensorflow.lite.**
+-dontwarn org.tensorflow.lite.gpu.**
+
+# OkHttp - required by uCrop 2.2.11 (image_cropper 10.0.0)
+-dontwarn okhttp3.**
+-keep class okhttp3.** { *; }

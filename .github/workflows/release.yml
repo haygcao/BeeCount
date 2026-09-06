@@ -23,6 +23,11 @@ on:
         required: false
         default: "true"
 
+# 允许取消正在运行的workflow
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 permissions:
   contents: write
 
@@ -89,7 +94,7 @@ jobs:
 
       - name: Install Android build-tools and platforms
         run: |
-          sdkmanager --install "platform-tools" "platforms;android-35" "build-tools;35.0.0"
+          sdkmanager --install "platform-tools" "platforms;android-35" "platforms;android-36" "build-tools;35.0.0"
 
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
@@ -157,10 +162,36 @@ jobs:
           export CI_VERSION='${{ steps.meta.outputs.tag_name }}'
           export GIT_COMMIT='${{ github.sha }}'
           export BUILD_TIME='${{ github.run_id }}'
+
+          # For Google Play: strip permissions that Play policy disallows for non-gallery apps.
+          # - REQUEST_INSTALL_PACKAGES: Google Play handles updates, in-app APK install not needed
+          # - READ_MEDIA_IMAGES / READ_EXTERNAL_STORAGE: 截屏自动记账功能在 Google Play 版本被砍掉
+          #   (Photo & Video Permissions 政策, https://support.google.com/googleplay/android-developer/answer/14115180)
+          mkdir -p android/app/src/prod
+          cat > android/app/src/prod/AndroidManifest.xml << 'MANIFEST_EOF'
+          <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+              xmlns:tools="http://schemas.android.com/tools">
+              <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES"
+                  tools:node="remove" />
+              <uses-permission android:name="android.permission.READ_MEDIA_IMAGES"
+                  tools:node="remove" />
+              <uses-permission android:name="android.permission.READ_MEDIA_VIDEO"
+                  tools:node="remove" />
+              <uses-permission android:name="android.permission.READ_MEDIA_AUDIO"
+                  tools:node="remove" />
+              <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"
+                  tools:node="remove" />
+          </manifest>
+          MANIFEST_EOF
+
           flutter build appbundle --release --flavor prod \
             --dart-define=CI_VERSION="$CI_VERSION" \
             --dart-define=GIT_COMMIT="$GIT_COMMIT" \
-            --dart-define=BUILD_TIME="$BUILD_TIME"
+            --dart-define=BUILD_TIME="$BUILD_TIME" \
+            --dart-define=GOOGLE_PLAY=true
+
+          # Cleanup: remove the temporary manifest so it doesn't affect other builds
+          rm -rf android/app/src/prod
 
       - name: List Android outputs (debug)
         run: |
@@ -174,19 +205,45 @@ jobs:
       - name: Rename Android artifacts with version
         run: |
           VERSION="${{ steps.meta.outputs.tag_name }}"
-          cd build/app/outputs
-          # 重命名 APK
-          if [ -f flutter-apk/app-prod-release.apk ]; then
-            mv flutter-apk/app-prod-release.apk flutter-apk/beecount-${VERSION}.apk
-            echo "Renamed APK to: beecount-${VERSION}.apk"
-          fi
-          # 重命名 AAB
-          if [ -f bundle/prodRelease/app-prod-release.aab ]; then
-            mv bundle/prodRelease/app-prod-release.aab bundle/prodRelease/beecount-${VERSION}.aab
+          APK_DIR="build/app/outputs/apk/prod/release"
+          # AGP splits.abi 产出 4 个 APK,gradle 内 outputFileName 已经按 ABI 分名:
+          #   - app-prod-release-vX.apk              主分发(arm64-v8a)
+          #   - app-prod-armeabi-v7a-release-vX.apk  armv7 老设备兼容
+          #   - app-prod-x86_64-release-vX.apk       Intel/Win/Linux 模拟器
+          #   - app-prod-universal-release-vX.apk    三 ABI 兜底
+          # 全部重命名成 beecount-<VERSION>-[<abi>].apk 上 Release。
+          for src in "$APK_DIR"/app-prod-*.apk; do
+            [ -f "$src" ] || continue
+            name="$(basename "$src")"
+            case "$name" in
+              app-prod-release-v*.apk)
+                dest="$APK_DIR/beecount-${VERSION}.apk"
+                ;;
+              app-prod-armeabi-v7a-release-v*.apk)
+                dest="$APK_DIR/beecount-${VERSION}-armeabi-v7a.apk"
+                ;;
+              app-prod-x86_64-release-v*.apk)
+                dest="$APK_DIR/beecount-${VERSION}-x86_64.apk"
+                ;;
+              app-prod-universal-release-v*.apk)
+                dest="$APK_DIR/beecount-${VERSION}-universal.apk"
+                ;;
+              *)
+                echo "Unknown APK pattern, skipping: $name"
+                continue
+                ;;
+            esac
+            mv "$src" "$dest"
+            echo "Renamed: $name → $(basename "$dest")"
+          done
+          # 重命名 AAB(AAB 不按 ABI 拆,Google Play 按设备分发)
+          if [ -f build/app/outputs/bundle/prodRelease/app-prod-release.aab ]; then
+            mv build/app/outputs/bundle/prodRelease/app-prod-release.aab \
+               build/app/outputs/bundle/prodRelease/beecount-${VERSION}.aab
             echo "Renamed AAB to: beecount-${VERSION}.aab"
           fi
           echo "=== Final Android artifacts ==="
-          find . -name "*.apk" -o -name "*.aab"
+          find build/app/outputs -name "beecount-*"
 
       - name: Upload Android artifacts
         uses: actions/upload-artifact@v4
@@ -194,8 +251,104 @@ jobs:
           name: android
           if-no-files-found: error
           path: |
-            build/app/outputs/flutter-apk/beecount-*.apk
+            build/app/outputs/apk/prod/release/beecount-*.apk
             build/app/outputs/bundle/prodRelease/beecount-*.aab
+
+      - name: Upload AAB to Google Play Console
+        if: (github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')) || github.event_name == 'workflow_dispatch'
+        env:
+          GOOGLE_PLAY_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON }}
+        run: |
+          VERSION="${{ steps.meta.outputs.tag_name }}"
+          AAB_FILE="build/app/outputs/bundle/prodRelease/beecount-${VERSION}.aab"
+
+          if [ -z "${GOOGLE_PLAY_SERVICE_ACCOUNT_JSON:-}" ]; then
+            echo "⚠️  GOOGLE_PLAY_SERVICE_ACCOUNT_JSON not set, skipping Google Play upload"
+            exit 0
+          fi
+
+          if [ ! -f "$AAB_FILE" ]; then
+            echo "❌ AAB file not found: $AAB_FILE"
+            exit 1
+          fi
+
+          echo "📤 Uploading $AAB_FILE to Google Play Console..."
+
+          # 保存服务账户 JSON 到临时文件
+          echo "$GOOGLE_PLAY_SERVICE_ACCOUNT_JSON" > /tmp/service-account.json
+
+          # 使用 Google Play Developer API 上传
+          # 安装 google-play CLI 工具
+          pip install google-auth google-auth-oauthlib google-auth-httplib2 google-api-python-client
+
+          # 创建上传脚本
+          cat > /tmp/upload_to_play.py << 'UPLOAD_SCRIPT'
+          import sys
+          import json
+          from google.oauth2 import service_account
+          from googleapiclient.discovery import build
+          from googleapiclient.http import MediaFileUpload
+
+          # 配置
+          PACKAGE_NAME = 'com.tntlikely.beecount'
+          AAB_FILE = sys.argv[1]
+          TRACK = 'production'  # internal, alpha, beta, production
+
+          # 认证
+          credentials = service_account.Credentials.from_service_account_file(
+              '/tmp/service-account.json',
+              scopes=['https://www.googleapis.com/auth/androidpublisher']
+          )
+
+          # 创建 API 客户端
+          service = build('androidpublisher', 'v3', credentials=credentials)
+
+          try:
+              # 创建编辑
+              edit = service.edits().insert(body={}, packageName=PACKAGE_NAME).execute()
+              edit_id = edit['id']
+              print(f"✅ Created edit: {edit_id}")
+
+              # 上传 AAB
+              media = MediaFileUpload(AAB_FILE, mimetype='application/octet-stream', resumable=True)
+              bundle = service.edits().bundles().upload(
+                  packageName=PACKAGE_NAME,
+                  editId=edit_id,
+                  media_body=media
+              ).execute()
+              version_code = bundle['versionCode']
+              print(f"✅ Uploaded AAB, version code: {version_code}")
+
+              # 分配到轨道
+              track_body = {
+                  'releases': [{
+                      'versionCodes': [version_code],
+                      'status': 'completed'
+                  }]
+              }
+              service.edits().tracks().update(
+                  packageName=PACKAGE_NAME,
+                  editId=edit_id,
+                  track=TRACK,
+                  body=track_body
+              ).execute()
+              print(f"✅ Assigned to {TRACK} track")
+
+              # 提交编辑
+              service.edits().commit(packageName=PACKAGE_NAME, editId=edit_id).execute()
+              print("✅ Changes committed to Google Play Console!")
+
+          except Exception as e:
+              print(f"❌ Upload failed: {e}")
+              sys.exit(1)
+          UPLOAD_SCRIPT
+
+          python /tmp/upload_to_play.py "$AAB_FILE"
+
+          # 清理
+          rm -f /tmp/service-account.json /tmp/upload_to_play.py
+
+          echo "✅ Successfully uploaded to Google Play Console (alpha track)!"
 
   ios:
     name: iOS (app.zip + unsigned .ipa)
@@ -231,12 +384,41 @@ jobs:
           fi
           echo "tag_name=$TAG_NAME" >> $GITHUB_OUTPUT
 
+      - name: Select latest Xcode
+        run: |
+          echo "📱 Available Xcode versions:"
+          ls -la /Applications/ | grep Xcode || true
+
+          # 选择最新的 Xcode 版本 (包含 iOS 26 SDK)
+          LATEST_XCODE=$(ls -d /Applications/Xcode*.app 2>/dev/null | sort -V | tail -1)
+          if [ -n "$LATEST_XCODE" ]; then
+            echo "🔧 Selecting Xcode: $LATEST_XCODE"
+            sudo xcode-select -s "$LATEST_XCODE"
+          fi
+
+          echo ""
+          echo "📋 Current Xcode version:"
+          xcodebuild -version
+
+          echo ""
+          echo "📋 Available iOS SDKs:"
+          xcodebuild -showsdks | grep -i ios || true
+
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
           flutter-version: ${{ env.FLUTTER_VERSION }}
           channel: "stable"
-          cache: true
+          cache: false
+
+      # 手动缓存 pub 依赖
+      - name: Cache pub dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.pub-cache
+          key: pub-${{ runner.os }}-${{ env.FLUTTER_VERSION }}-${{ github.sha }}
+          restore-keys: |
+            pub-${{ runner.os }}-${{ env.FLUTTER_VERSION }}-
 
       - name: Flutter pub get
         run: flutter pub get
@@ -262,6 +444,7 @@ jobs:
           IOS_P12_BASE64: ${{ secrets.APPLE_CERTIFICATE_P12 }}
           IOS_P12_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
           IOS_PROVISION_PROFILE_BASE64: ${{ secrets.APPLE_PROVISIONING_PROFILE }}
+          IOS_WIDGET_PROVISION_PROFILE_BASE64: ${{ secrets.APPLE_PROVISIONING_PROFILE_WIDGET }}
           IOS_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
         run: |
           set -euo pipefail
@@ -295,8 +478,24 @@ jobs:
             cp $PP_PATH ~/Library/MobileDevice/Provisioning\ Profiles/${PP_UUID}.mobileprovision
             echo "✅ Installed provisioning profile: ${PP_UUID}.mobileprovision"
 
-            # 调试：显示 provisioning profile 详细信息
-            echo "📋 Provisioning Profile details:"
+            # 安装Widget Extension provisioning profile
+            if [ -n "${IOS_WIDGET_PROVISION_PROFILE_BASE64:-}" ]; then
+              WIDGET_PP_PATH=$RUNNER_TEMP/build_widget_pp.mobileprovision
+              echo "$IOS_WIDGET_PROVISION_PROFILE_BASE64" | base64 -d > $WIDGET_PP_PATH
+              WIDGET_PP_UUID=$(security cms -D -i $WIDGET_PP_PATH | plutil -extract UUID raw -)
+              echo "Widget Provisioning Profile UUID: $WIDGET_PP_UUID"
+              cp $WIDGET_PP_PATH ~/Library/MobileDevice/Provisioning\ Profiles/${WIDGET_PP_UUID}.mobileprovision
+              echo "✅ Installed widget provisioning profile: ${WIDGET_PP_UUID}.mobileprovision"
+
+              # 调试：显示 widget provisioning profile 详细信息
+              echo "📋 Widget Provisioning Profile details:"
+              security cms -D -i $WIDGET_PP_PATH | plutil -p - | grep -A 5 -E "(Name|UUID|TeamIdentifier|AppIDName)"
+            else
+              echo "⚠️  No Widget Extension provisioning profile provided"
+            fi
+
+            # 调试：显示主应用 provisioning profile 详细信息
+            echo "📋 Main App Provisioning Profile details:"
             security cms -D -i $PP_PATH | plutil -p - | grep -A 5 -E "(Name|UUID|TeamIdentifier|AppIDName)"
 
             # 设置 codesign 权限
@@ -332,6 +531,8 @@ jobs:
               '    <dict>' \
               '        <key>com.tntlikely.beecount</key>' \
               '        <string>BeeCount_AppStore</string>' \
+              '        <key>com.tntlikely.beecount.BeeCountWidgetExtension</key>' \
+              '        <string>BeeCount_Widget_AppStore</string>' \
               '    </dict>' \
               '</dict>' \
               '</plist>' \
@@ -361,32 +562,99 @@ jobs:
         run: |
           PROJECT_FILE="ios/Runner.xcodeproj/project.pbxproj"
 
+          echo "🔧 Configuring manual signing for iOS..."
+
           # 1. 配置手动签名
           sed -i '' 's/CODE_SIGN_STYLE = Automatic;/CODE_SIGN_STYLE = Manual;/g' "$PROJECT_FILE"
 
           # 2. 修改签名身份为发布证书
           sed -i '' 's/"CODE_SIGN_IDENTITY\[sdk=iphoneos\*\]" = "iPhone Developer";/"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "Apple Distribution";/g' "$PROJECT_FILE"
 
-          # 3. 使用perl在每个buildSettings块后添加配置（更可靠）
-          perl -i -pe "s/(buildSettings = \\{)/\$1\n\t\t\t\tDEVELOPMENT_TEAM = ${APPLE_TEAM_ID};\n\t\t\t\tPROVISIONING_PROFILE_SPECIFIER = \\\"BeeCount_AppStore\\\";/g" "$PROJECT_FILE"
+          # 3. 为主应用和Widget Extension配置Team ID和Provisioning Profile
+          # 先清除所有现有的DEVELOPMENT_TEAM和PROVISIONING_PROFILE_SPECIFIER配置
+          sed -i '' '/DEVELOPMENT_TEAM = /d' "$PROJECT_FILE"
+          sed -i '' '/PROVISIONING_PROFILE_SPECIFIER = /d' "$PROJECT_FILE"
+
+          # 4. 使用perl为所有buildSettings添加Team ID（包括主应用和Widget Extension）
+          perl -i -pe "s/(buildSettings = \\{)/\$1\n\t\t\t\tDEVELOPMENT_TEAM = ${APPLE_TEAM_ID};/g" "$PROJECT_FILE"
+
+          # 5. 为Widget Extension和主应用添加Provisioning Profile配置
+          # 使用perl进行精确匹配和插入
+          perl -i -pe '
+            # Widget Extension: 在其Bundle ID行前插入Profile配置
+            if (/^\s+PRODUCT_BUNDLE_IDENTIFIER = com\.tntlikely\.beecount\.BeeCountWidgetExtension;/) {
+              print "\t\t\t\tPROVISIONING_PROFILE_SPECIFIER = \"BeeCount_Widget_AppStore\";\n";
+            }
+            # 主应用: 主应用使用变量形式的Bundle ID,通过CODE_SIGN_ENTITLEMENTS识别
+            elsif (/^\s+CODE_SIGN_ENTITLEMENTS = Runner\/Runner\.entitlements;/) {
+              print "\t\t\t\tPROVISIONING_PROFILE_SPECIFIER = \"BeeCount_AppStore\";\n";
+            }
+          ' "$PROJECT_FILE"
 
           echo "✅ Configured manual signing for Xcode project"
-          echo "Signing configuration:"
-          grep -E "CODE_SIGN_STYLE|CODE_SIGN_IDENTITY|DEVELOPMENT_TEAM|PROVISIONING_PROFILE_SPECIFIER" "$PROJECT_FILE" | head -30
 
-      - name: Build iOS (signed, release)
+      - name: Build iOS archive with xcodebuild
+        if: env.IOS_SIGNING_ENABLED == 'true'
+        env:
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+        run: |
+          echo "📦 Building iOS archive..."
+
+          # Archive the app (只显示错误和警告,减少日志噪音)
+          # 完全依赖project.pbxproj中的配置
+          if xcodebuild archive \
+            -workspace ios/Runner.xcworkspace \
+            -scheme Runner \
+            -configuration Release \
+            -archivePath build/ios/Runner.xcarchive \
+            -quiet \
+            2>&1 | grep -E "error:|warning:|note:|failed|succeeded" | tee xcodebuild-archive.log; then
+
+            echo "✅ Archive created successfully"
+            ls -lh build/ios/Runner.xcarchive/Products/Applications/ 2>/dev/null || true
+          else
+            echo "❌ Archive failed! Full log:"
+            cat xcodebuild-archive.log
+            exit 1
+          fi
+
+      - name: Export IPA from archive
         if: env.IOS_SIGNING_ENABLED == 'true'
         run: |
-          export CI_VERSION='${{ steps.meta.outputs.tag_name }}'
-          export GIT_COMMIT='${{ github.sha }}'
-          export BUILD_TIME='${{ github.run_id }}'
+          echo "📤 Exporting IPA..."
 
-          # 使用 flutter build ipa 并通过 --export-options-plist 指定签名配置
-          flutter build ipa --release \
-            --export-options-plist=ios/ExportOptions.plist \
-            --dart-define=CI_VERSION="$CI_VERSION" \
-            --dart-define=GIT_COMMIT="$GIT_COMMIT" \
-            --dart-define=BUILD_TIME="$BUILD_TIME"
+          # Export IPA (只显示关键信息)
+          if xcodebuild -exportArchive \
+            -archivePath build/ios/Runner.xcarchive \
+            -exportPath build/ios/ipa \
+            -exportOptionsPlist ios/ExportOptions.plist \
+            -quiet \
+            2>&1 | grep -E "error:|warning:|Exported|succeeded" | tee xcodebuild-export.log; then
+
+            echo "✅ IPA exported successfully"
+            ls -lh build/ios/ipa/
+
+            # 验证IPA文件
+            if [ -f build/ios/ipa/*.ipa ]; then
+              echo ""
+              echo "IPA file details:"
+              ls -lh build/ios/ipa/*.ipa
+
+              # 显示IPA签名信息
+              echo ""
+              echo "IPA signing info:"
+              unzip -l build/ios/ipa/*.ipa | grep -E "Payload|PlugIns|\.app" | head -20
+            else
+              echo "❌ Error: IPA file not found in build/ios/ipa/"
+              exit 1
+            fi
+          else
+            echo ""
+            echo "❌ Export failed. Check xcodebuild-export.log for details"
+            echo "Last 50 lines of export log:"
+            tail -50 xcodebuild-export.log
+            exit 1
+          fi
 
       - name: Copy signed IPA to release directory
         if: env.IOS_SIGNING_ENABLED == 'true'
@@ -574,20 +842,29 @@ jobs:
 
       - name: Generate release notes
         id: notes
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           TAG="${{ steps.meta.outputs.tag_name }}"
           # 获取上一个 tag（不含当前 tag）
           PREV_TAG=$(git tag --list --sort=-version:refname | grep -v "^${TAG}$" | head -n1)
           echo "Current tag: $TAG"
           echo "Previous tag: $PREV_TAG"
-          # 生成 commit 列表（排除 merge commit）
+          # 生成 commit 列表（排除 merge commit），带提交人：
+          # 用 gh api 反查 commit 对应的 GitHub 登录名生成可点击的 @mention，
+          # 查不到（未关联邮箱/API 失败）时回退为 git 作者名。
           if [ -n "$PREV_TAG" ]; then
             echo "Generating commit log from $PREV_TAG to HEAD"
-            COMMITS=$(git log --no-merges --pretty=format:"- %s ([%h](https://github.com/${GITHUB_REPOSITORY}/commit/%H))" "$PREV_TAG"..HEAD)
+            RANGE="$PREV_TAG..HEAD"
           else
             echo "No previous tag found, showing all commits"
-            COMMITS=$(git log --no-merges --pretty=format:"- %s ([%h](https://github.com/${GITHUB_REPOSITORY}/commit/%H))")
+            RANGE=""
           fi
+          COMMITS=$(git log --no-merges --pretty=tformat:"%H%x09%h%x09%an%x09%s" $RANGE | while IFS=$'\t' read -r full short name subj; do
+            login=$(gh api "repos/${GITHUB_REPOSITORY}/commits/${full}" --jq '.author.login // empty' 2>/dev/null || true)
+            if [ -n "$login" ]; then author="[@${login}](https://github.com/${login})"; else author="$name"; fi
+            echo "- $subj ([${short}](https://github.com/${GITHUB_REPOSITORY}/commit/${full})) $author"
+          done)
           cat > RELEASE_NOTES.md <<EOF
 
           ## 变更记录
@@ -624,9 +901,9 @@ jobs:
           # 获取 commit 变更列表（与 release notes 相同）
           PREV_TAG=$(git tag --list --sort=-version:refname | grep -v "^${TAG}$" | head -n1)
           if [ -n "$PREV_TAG" ]; then
-            COMMITS=$(git log --no-merges --pretty=format:"- %s" "$PREV_TAG"..HEAD)
+            COMMITS=$(git log --no-merges --pretty=format:"- %s (%an)" "$PREV_TAG"..HEAD)
           else
-            COMMITS=$(git log --no-merges --pretty=format:"- %s")
+            COMMITS=$(git log --no-merges --pretty=format:"- %s (%an)")
           fi
 
           # 转义 Markdown 特殊字符，然后进行 URL 编码

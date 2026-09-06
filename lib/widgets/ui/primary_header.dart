@@ -2,12 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../providers.dart';
-import '../../styles/design.dart';
+import '../../providers/theme_providers.dart';
+import '../../styles/tokens.dart';
+import '../../styles/header_skins.dart';
+import 'skin_animation_scope.dart';
 
 class PrimaryHeader extends ConsumerWidget {
   final String title;
   final String? subtitle;
   final bool showBack;
+  final VoidCallback? onBack;
+  final Key? backButtonKey;
   final List<Widget>? actions;
   final Widget? bottom;
   final Widget? content;
@@ -28,6 +33,8 @@ class PrimaryHeader extends ConsumerWidget {
     required this.title,
     this.subtitle,
     this.showBack = false,
+    this.onBack,
+    this.backButtonKey,
     this.actions,
     this.bottom,
     this.content,
@@ -46,49 +53,85 @@ class PrimaryHeader extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final primary = ref.watch(primaryColorProvider);
-    final titleStyle = AppTextTokens.title(context);
-    final subStyle = AppTextTokens.label(context);
+    final titleStyle = BeeTextTokens.title(context);
+    final subStyle = BeeTextTokens.label(context);
     final effectivePadding =
         compact ? const EdgeInsets.fromLTRB(8, 6, 8, 6) : padding;
 
+    // ⭐ 使用 Token 系统
+    final isDark = BeeTokens.isDark(context);
+
+    // ⭐ 头部皮肤:亮暗通用同一款(暗色由皮肤内部渲染成纯黑底 + 偏淡主题色图形)。
+    // 'none' → null = 纯主题色 / 纯黑。
+    final skin = headerSkinById(ref.watch(headerSkinProvider));
+
+    // ⭐ Header 背景颜色：亮色模式用主题色，暗黑模式用纯黑
+    final headerBg = isDark ? Colors.black : primary;
+
+    // ⭐ 文字和图标颜色（使用 Token）
+    final textColor = BeeTokens.textPrimary(context);
+    final iconColor = BeeTokens.iconPrimary(context);
+
+    // ⭐ 状态栏图标颜色：亮色模式用深色图标，暗黑模式用浅色图标
+    final statusBarBrightness = statusBarIconBrightness ??
+        (isDark ? Brightness.light : Brightness.dark);
+
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: SystemUiOverlayStyle(
-        statusBarColor: primary,
-        statusBarIconBrightness: statusBarIconBrightness ?? Brightness.dark,
-        statusBarBrightness: Brightness.light,
+        // edge-to-edge 模式(main.dart 开启)下 header 自己画到状态栏底下,
+        // 状态栏保持透明即可 —— 不再依赖 OEM 响应 setStatusBarColor
+        // (华为 EMUI/鸿蒙会无视它,导致背景渗透不到状态栏)。
+        statusBarColor: Colors.transparent,
+        systemStatusBarContrastEnforced: false,
+        statusBarIconBrightness: statusBarBrightness,
+        statusBarBrightness: isDark ? Brightness.dark : Brightness.light,
       ),
       child: Material(
         color: Colors.transparent,
         child: Container(
-          decoration: decoration ?? BoxDecoration(color: primary),
-          child: SafeArea(
-            bottom: false,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
+          decoration: decoration ?? BoxDecoration(color: headerBg), // ⭐ 根据设置决定背景色
+          child: Stack(
+            children: [
+              // ⭐ 头部皮肤层(主题色之上的装饰);未选皮肤时为纯主题色 / 纯黑
+              if (skin != null)
+                Positioned.fill(
+                    child: SkinAnimationScope(
+                        child: skin.builder(primary, isDark))),
+              // 主内容
+              SafeArea(
+                bottom: false,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
                 if (showTitleSection)
                   Padding(
                     padding: effectivePadding,
                     child: Row(
                       children: [
-                        if (showBack)
+                        if (showBack) ...[
                           IconButton(
-                            icon: const Icon(Icons.arrow_back,
-                                color: Colors.black),
-                            onPressed: () => Navigator.of(context).maybePop(),
+                            key: backButtonKey,
+                            icon: Icon(Icons.arrow_back, color: iconColor), // ⭐ 自适应颜色
+                            onPressed: onBack ?? () => Navigator.of(context).maybePop(),
+                            padding: EdgeInsets.zero,
+                            constraints: const BoxConstraints(),
+                            style: IconButton.styleFrom(
+                              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                            ),
                           ),
+                          const SizedBox(width: 8),
+                        ],
                         if (leadingIcon != null) ...[
                           leadingPlain
-                              ? Icon(leadingIcon, color: Colors.black87)
+                              ? Icon(leadingIcon, color: iconColor)
                               : Container(
                                   width: 36,
                                   height: 36,
                                   decoration: BoxDecoration(
-                                    color: Colors.white.withValues(alpha: 0.7),
+                                    color: Colors.white.withValues(alpha: 0.2),
                                     shape: BoxShape.circle,
                                   ),
-                                  child:
-                                      Icon(leadingIcon, color: Colors.black87),
+                                  child: Icon(leadingIcon, color: iconColor),
                                 ),
                           const SizedBox(width: 8),
                         ],
@@ -102,7 +145,7 @@ class PrimaryHeader extends ConsumerWidget {
                                   Flexible(
                                     child: Text(
                                       title,
-                                      style: titleStyle,
+                                      style: titleStyle.copyWith(color: textColor), // ⭐ 自适应颜色
                                       overflow: TextOverflow.ellipsis,
                                     ),
                                   ),
@@ -119,7 +162,9 @@ class PrimaryHeader extends ConsumerWidget {
                                     Flexible(
                                       child: Text(
                                         subtitle!,
-                                        style: subStyle,
+                                        style: subStyle.copyWith(
+                                          color: BeeTokens.textSecondary(context),
+                                        ),
                                         overflow: TextOverflow.ellipsis,
                                       ),
                                     ),
@@ -135,9 +180,9 @@ class PrimaryHeader extends ConsumerWidget {
                         if (center != null) ...[
                           const SizedBox(width: 6),
                           DefaultTextStyle(
-                            style: Theme.of(context).textTheme.labelMedium ??
-                                const TextStyle(
-                                    fontSize: 12, color: Colors.black87),
+                            style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                              color: iconColor, // ⭐ 自适应颜色
+                            ) ?? TextStyle(fontSize: 12, color: iconColor),
                             child: center!,
                           ),
                         ],
@@ -148,11 +193,21 @@ class PrimaryHeader extends ConsumerWidget {
                 if (content != null)
                   Padding(
                     padding: effectivePadding,
-                    child: content!,
+                    child: DefaultTextStyle(
+                      style: DefaultTextStyle.of(context).style.copyWith(
+                        color: textColor, // ⭐ 自适应颜色
+                      ),
+                      child: IconTheme(
+                        data: IconThemeData(color: iconColor), // ⭐ 自适应颜色
+                        child: content!,
+                      ),
+                    ),
                   ),
-                if (bottom != null) bottom!,
-              ],
-            ),
+                    if (bottom != null) bottom!,
+                  ],
+                ),
+              ),
+            ],
           ),
         ),
       ),

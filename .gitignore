@@ -12,9 +12,11 @@
 .swiftpm/
 migrate_working_dir/
 .ai/*
+.claude/
 CLAUDE.md
 PROJECT_IMPROVEMENTS.md
 assets/config.json
+/marketing/
 
 
 # IntelliJ related
@@ -36,7 +38,8 @@ assets/config.json
 .flutter-plugins-dependencies
 .pub-cache/
 .pub/
-/build/
+build/
+**/build/
 
 # Symbolication related
 app.*.symbols
@@ -53,5 +56,14 @@ android/*.keystore
 android/app/*.keystore
 
 .docs
+docs/superpowers/
 .tmp
 tmp
+# Playwright MCP capture artifacts
+.playwright-mcp/
+
+# visual brainstorm 临时文件
+.superpowers/
+
+# 本地设计原型（不提交）
+design-prototypes/

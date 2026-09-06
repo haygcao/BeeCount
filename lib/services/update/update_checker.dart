@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'package:dio/dio.dart';
 import 'package:package_info_plus/package_info_plus.dart';
-import '../../utils/logger.dart';
+import '../system/logger_service.dart';
 import 'update_result.dart';
 
 /// 更新检查管理类
@@ -14,19 +14,19 @@ class UpdateChecker {
   static String _cleanReleaseNotes(String body) {
     if (body.isEmpty) return body;
 
-    logI('UpdateChecker', '====== 原始 release notes ======');
-    logI('UpdateChecker', body);
-    logI('UpdateChecker', '====== 开始清理 ======');
+    logger.info('UpdateChecker', '====== 原始 release notes ======');
+    logger.info('UpdateChecker', body);
+    logger.info('UpdateChecker', '====== 开始清理 ======');
 
     final lines = body.split('\n');
     final cleanedLines = <String>[];
 
     for (var line in lines) {
-      logI('UpdateChecker', '处理行: "$line"');
+      logger.info('UpdateChecker', '处理行: "$line"');
 
       // 跳过包含 "Full Changelog" 的行
       if (line.contains('Full Changelog')) {
-        logI('UpdateChecker', '  -> 跳过: 包含 Full Changelog');
+        logger.info('UpdateChecker', '  -> 跳过: 包含 Full Changelog');
         continue;
       }
 
@@ -35,23 +35,23 @@ class UpdateChecker {
       final regex = RegExp(r'\s*\(\[[a-f0-9]{7}\]\(https://github\.com/[^\)]+\)\)');
       if (regex.hasMatch(line)) {
         line = line.replaceAll(regex, '');
-        logI('UpdateChecker', '  -> 移除 commit 链接后: "$line"');
+        logger.info('UpdateChecker', '  -> 移除 commit 链接后: "$line"');
       }
 
       // 跳过空行
       if (line.trim().isEmpty) {
-        logI('UpdateChecker', '  -> 跳过: 空行');
+        logger.info('UpdateChecker', '  -> 跳过: 空行');
         continue;
       }
 
-      logI('UpdateChecker', '  -> 保留');
+      logger.info('UpdateChecker', '  -> 保留');
       cleanedLines.add(line);
     }
 
     final result = cleanedLines.join('\n').trim();
-    logI('UpdateChecker', '====== 清理后的 release notes ======');
-    logI('UpdateChecker', result);
-    logI('UpdateChecker', '====== 清理完成 ======');
+    logger.info('UpdateChecker', '====== 清理后的 release notes ======');
+    logger.info('UpdateChecker', result);
+    logger.info('UpdateChecker', '====== 清理完成 ======');
 
     return result;
   }
@@ -74,7 +74,7 @@ class UpdateChecker {
     final random = (DateTime.now().millisecondsSinceEpoch % userAgents.length);
     final selectedUA = userAgents[random];
 
-    logI('UpdateChecker', '使用User-Agent: ${selectedUA.substring(0, 50)}...');
+    logger.info('UpdateChecker', '使用User-Agent: ${selectedUA.substring(0, 50)}...');
     return selectedUA;
   }
 
@@ -85,7 +85,7 @@ class UpdateChecker {
       final currentInfo = await _getAppInfo();
       final currentVersion = _normalizeVersion(currentInfo.version);
 
-      logI('UpdateChecker', '当前版本: $currentVersion');
+      logger.info('UpdateChecker', '当前版本: $currentVersion');
 
       // 配置Dio超时
       _dio.options.connectTimeout = const Duration(seconds: 30);
@@ -93,7 +93,7 @@ class UpdateChecker {
       _dio.options.sendTimeout = const Duration(minutes: 2);
 
       // 获取最新 release 信息 - 添加重试机制
-      logI('UpdateChecker', '开始请求GitHub API...');
+      logger.info('UpdateChecker', '开始请求GitHub API...');
       Response? resp;
       int attempts = 0;
       const maxAttempts = 3;
@@ -101,7 +101,7 @@ class UpdateChecker {
       while (attempts < maxAttempts) {
         attempts++;
         try {
-          logI('UpdateChecker', '尝试第$attempts次请求GitHub API...');
+          logger.info('UpdateChecker', '尝试第$attempts次请求GitHub API...');
           resp = await _dio.get(
             'https://api.github.com/repos/TNT-Likely/BeeCount/releases/latest',
             options: Options(
@@ -113,17 +113,17 @@ class UpdateChecker {
           );
           // 如果是成功响应，跳出循环
           if (resp.statusCode == 200) {
-            logI('UpdateChecker', 'GitHub API请求成功');
+            logger.info('UpdateChecker', 'GitHub API请求成功');
             break;
           } else {
-            logW('UpdateChecker', '第$attempts次请求返回错误状态码: ${resp.statusCode}');
+            logger.warning('UpdateChecker', '第$attempts次请求返回错误状态码: ${resp.statusCode}');
             if (attempts == maxAttempts) {
               break; // 最后一次尝试，不再重试
             }
             await Future.delayed(const Duration(seconds: 1));
           }
         } catch (e) {
-          logE('UpdateChecker', '第$attempts次请求失败', e);
+          logger.error('UpdateChecker', '第$attempts次请求失败', e);
           if (attempts == maxAttempts) {
             rethrow; // 最后一次尝试失败时抛出异常
           }
@@ -132,24 +132,19 @@ class UpdateChecker {
         }
       }
 
-      logI('UpdateChecker', 'GitHub API响应状态码: ${resp?.statusCode}');
+      logger.info('UpdateChecker', 'GitHub API响应状态码: ${resp?.statusCode}');
       if (resp != null && resp.statusCode == 200) {
         final data = resp.data;
         final latestVersion = _normalizeVersion(data['tag_name']);
 
-        logI('UpdateChecker', '最新版本: $latestVersion');
+        logger.info('UpdateChecker', '最新版本: $latestVersion');
 
         if (_isNewerVersion(latestVersion, currentVersion)) {
-          // 找到APK下载链接
+          // 找到 APK 下载链接 — v3.2.1 起 Release 含多个 APK(arm64 主包 /
+          // armeabi-v7a / x86_64 / universal),需要按设备选择,否则 arm64 真机
+          // 装到 armv7 包会走系统 32-bit 兼容层导致严重卡顿
           final assets = data['assets'] as List;
-          String? apkUrl;
-
-          for (final asset in assets) {
-            if (asset['name'].toString().endsWith('.apk')) {
-              apkUrl = asset['browser_download_url'];
-              break;
-            }
-          }
+          final apkUrl = _pickApkUrl(assets, latestVersion);
 
           if (apkUrl != null) {
             return UpdateResult(
@@ -173,7 +168,7 @@ class UpdateChecker {
       } else {
         final statusCode = resp?.statusCode ?? 'unknown';
         final responseData = resp?.data ?? 'no response';
-        logE('UpdateChecker',
+        logger.error('UpdateChecker',
             'GitHub API请求失败: HTTP $statusCode, 响应: $responseData');
         return UpdateResult(
           hasUpdate: false,
@@ -181,12 +176,46 @@ class UpdateChecker {
         );
       }
     } catch (e) {
-      logE('UpdateChecker', '检查更新异常', e);
+      logger.error('UpdateChecker', '检查更新异常', e);
       return UpdateResult(
         hasUpdate: false,
         message: '__UPDATE_CHECK_EXCEPTION__:$e',
       );
     }
+  }
+
+  /// 从 GitHub Release assets 列表里挑出适配当前设备的 APK。
+  ///
+  /// v3.2.1 起 Release 含多个按 ABI 拆分的 APK:
+  ///   - beecount-<ver>.apk             主分发(arm64-v8a,99% 现役真机)
+  ///   - beecount-<ver>-armeabi-v7a.apk armv7 老 32-bit 设备
+  ///   - beecount-<ver>-x86_64.apk      Intel/Win/Linux 模拟器
+  ///   - beecount-<ver>-universal.apk   三 ABI 全打,兜底
+  ///
+  /// 历史 bug:之前 `endsWith('.apk') break` 取第一个,因 GitHub assets 按
+  /// 字母序排列,第一个就是 `-armeabi-v7a.apk` — arm64 真机装上跑 32-bit 兼容
+  /// 模式 CPU 指令集降级 + 寄存器宽度从 64bit 切 32bit,体感严重卡顿。
+  ///
+  /// 选择策略(按优先级):
+  ///   1. `beecount-<ver>.apk` 主包(arm64)— 现役真机 99% 是 arm64
+  ///   2. universal — 主包不存在时兜底
+  ///   3. 任何 .apk — 都没有时取第一个
+  static String? _pickApkUrl(List assets, String version) {
+    final apkByName = <String, String>{};
+    for (final asset in assets) {
+      final name = asset['name'].toString();
+      if (name.endsWith('.apk')) {
+        apkByName[name] = asset['browser_download_url'];
+      }
+    }
+    if (apkByName.isEmpty) return null;
+
+    final mainPkgName = 'beecount-$version.apk';
+    final universalName = 'beecount-$version-universal.apk';
+
+    if (apkByName.containsKey(mainPkgName)) return apkByName[mainPkgName];
+    if (apkByName.containsKey(universalName)) return apkByName[universalName];
+    return apkByName.values.first;
   }
 
   // 辅助方法

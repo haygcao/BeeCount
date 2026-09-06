@@ -73,6 +73,28 @@ Help us translate the app into more languages so more people can use it.
 - Icon design
 - Screenshots and promotional materials
 
+#### 🎨 Designer Recruitment {#designer-recruitment}
+
+**We're looking for talented UI/UX designers to join the BeeCount project!**
+
+📐 **What You'll Work On:**
+
+- Redesign app UI and interaction experience
+- Create theme skins and illustration elements
+- Optimize visual consistency across the interface
+- Develop a modern, clean design language
+
+🎁 **What You'll Get:**
+
+- Portfolio pieces for open-source work
+- Credit in README and app
+- Close collaboration with dev team
+- Satisfaction of creating great UX for thousands of users
+
+💌 **Contact:**
+
+- GitHub Issues: [Submit design proposals](https://github.com/TNT-Likely/BeeCount/issues)
+
 ## Reporting Bugs
 
 ### Before Submitting
@@ -544,19 +566,19 @@ Closes #123
 
 ## Translation Contributions
 
-BeeCount supports 9 languages. We welcome contributions of new language translations or improvements to existing ones.
+BeeCount officially maintains 3 languages (Simplified Chinese, Traditional Chinese, English), plus additional community-contributed translations. We welcome contributions of new languages or improvements to existing ones.
 
 ### Currently Supported Languages
+
+**Officially maintained:**
 
 - Simplified Chinese (zh)
 - Traditional Chinese (zh_Hant)
 - English (en)
-- 日本語 (ja)
-- 한국어 (ko)
-- Español (es)
-- Français (fr)
-- Deutsch (de)
-- Português (pt)
+
+**Community-contributed:**
+
+- 한국어 / Korean (ko)
 
 ### Adding a New Language
 
@@ -680,9 +702,9 @@ git push origin docs/improve-supabase-guide
 
 All contributors will be recorded in the project's contributor list. Significant contributions will be specially acknowledged in Release Notes.
 
-## License
+## License & Contributor License Terms
 
-By contributing code, you agree that your contributions will be licensed under the project's [MIT License](../../LICENSE).
+This project is dual-licensed: free for non-commercial use, paid license for commercial use (see [LICENSE_EN](../../LICENSE_EN)). By submitting a contribution (code / translation / docs, etc.), you agree to the [Contributor License Terms in the root CONTRIBUTING.md](../../CONTRIBUTING.md#contributor-license-terms): your contribution is licensed under the repository LICENSE, and you grant the project maintainer the right to sublicense it, including under commercial license terms; you retain the copyright of your contribution.
 
 ---
 

@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../styles/colors.dart';
+import '../../styles/tokens.dart';
 import '../../providers.dart';
+import '../../utils/currencies.dart';
 import '../../utils/format_utils.dart';
 import 'format_money.dart';
 
@@ -14,6 +15,7 @@ class AmountText extends ConsumerWidget {
   final bool showCurrency; // 是否显示币种符号(¥/$等),默认false
   final bool useCompactFormat; // 是否使用大金额缩写(万/千/k/M等),默认false
   final String? currencyCode; // 指定币种代码,null时自动获取当前账本币种
+  final bool colorizeIncome; // 是否给收入添加绿色,默认false
 
   const AmountText({
     super.key,
@@ -25,6 +27,7 @@ class AmountText extends ConsumerWidget {
     this.showCurrency = false,
     this.useCompactFormat = false,
     this.currencyCode,
+    this.colorizeIncome = false,
   });
 
   @override
@@ -38,7 +41,7 @@ class AmountText extends ConsumerWidget {
               Theme.of(context)
                   .textTheme
                   .bodyMedium
-                  ?.copyWith(color: BeeColors.primaryText));
+                  ?.copyWith(color: BeeTokens.textPrimary(context)));
     }
 
     String displayText;
@@ -60,8 +63,12 @@ class AmountText extends ConsumerWidget {
             isChineseLocale: isChinese);
 
         if (!showCurrency) {
-          // 移除币种符号(¥/$等)
-          formatted = formatted.replaceAll(RegExp(r'^[¥$€£₩]+'), '');
+          // 移除 formatBalance 加进去的币种符号。要按实际币种动态算 —
+          // 老的硬编码字符类 [¥$€£₩] 漏了 ฿ ₹ ₽ ₫ Rp HK$ NT$ C$ 等。
+          final symbol = getCurrencySymbol(effectiveCurrencyCode.toUpperCase());
+          if (symbol.isNotEmpty && formatted.startsWith(symbol)) {
+            formatted = formatted.substring(symbol.length).trimLeft();
+          }
         }
 
         if (!useCompactFormat) {
@@ -70,7 +77,8 @@ class AmountText extends ConsumerWidget {
               formatMoneyCompact(value, maxDecimals: decimals, signed: signed);
           // 但如果需要币种符号,添加上去
           if (showCurrency) {
-            final currencySymbol = _getCurrencySymbol(effectiveCurrencyCode);
+            final currencySymbol =
+                getCurrencySymbol(effectiveCurrencyCode.toUpperCase());
             displayText = '$currencySymbol$displayText';
           }
         } else {
@@ -87,36 +95,24 @@ class AmountText extends ConsumerWidget {
           formatMoneyCompact(value, maxDecimals: decimals, signed: signed);
     }
 
+    // 计算最终样式：收入且开启着色时使用绿色
+    final isIncome = value > 0;
+    final baseStyle = style ??
+        Theme.of(context)
+            .textTheme
+            .bodyMedium
+            ?.copyWith(color: BeeTokens.textPrimary(context));
+
+    final finalStyle = (colorizeIncome && isIncome)
+        ? baseStyle?.copyWith(color: BeeTokens.incomeColor(context, ref))
+        : baseStyle;
+
     return Text(
       displayText,
       maxLines: 1,
       overflow: TextOverflow.ellipsis,
       textAlign: TextAlign.right,
-      style: style ??
-          Theme.of(context)
-              .textTheme
-              .bodyMedium
-              ?.copyWith(color: BeeColors.primaryText),
+      style: finalStyle,
     );
-  }
-
-  // 获取币种符号
-  String _getCurrencySymbol(String currencyCode) {
-    switch (currencyCode.toUpperCase()) {
-      case 'CNY':
-        return '¥';
-      case 'USD':
-        return '\$';
-      case 'EUR':
-        return '€';
-      case 'GBP':
-        return '£';
-      case 'JPY':
-        return '¥';
-      case 'KRW':
-        return '₩';
-      default:
-        return currencyCode;
-    }
   }
 }

@@ -1,10 +1,18 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <!-- Required for Supabase network requests -->
     <uses-permission android:name="android.permission.INTERNET" />
-    
-    <!-- Required for downloading APK files -->
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" 
-        android:maxSdkVersion="28" />
+
+    <!-- Required for voice recording -->
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+
+    <!-- Required for downloading APK files and saving images (API <= 29) -->
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+        android:maxSdkVersion="29" />
+    <!-- Required for reading screenshots (Android 13+) -->
+    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
+    <!-- Required for reading screenshots (Android 10-12) -->
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"
+        android:maxSdkVersion="32" />
     <!-- Required for installing APK files -->
     <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
     <!-- Required for showing notifications -->
@@ -22,16 +30,20 @@
     <uses-permission android:name="android.permission.USE_EXACT_ALARM" />
     <!-- Required for requesting battery optimization exemption -->
     <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
+    <!-- Required for biometric authentication -->
+    <uses-permission android:name="android.permission.USE_BIOMETRIC" />
     
     <application
         android:label="@string/app_name"
         android:name="${applicationName}"
-        android:icon="@mipmap/ic_launcher">
+        android:icon="@mipmap/ic_launcher"
+        android:requestLegacyExternalStorage="true">
         <activity
             android:name=".MainActivity"
             android:exported="true"
-            android:launchMode="singleTop"
-            android:taskAffinity=""
+            android:launchMode="singleTask"
+            android:documentLaunchMode="never"
+            android:alwaysRetainTaskState="true"
             android:theme="@style/LaunchTheme"
             android:configChanges="orientation|keyboardHidden|keyboard|screenSize|smallestScreenSize|locale|layoutDirection|fontScale|screenLayout|density|uiMode"
             android:hardwareAccelerated="true"
@@ -48,8 +60,27 @@
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
+            <!-- 接收图片分享 -->
+            <intent-filter>
+                <action android:name="android.intent.action.SEND"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <data android:mimeType="image/*"/>
+            </intent-filter>
+            <!-- URL Scheme: beecount:// -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <category android:name="android.intent.category.BROWSABLE"/>
+                <data android:scheme="beecount"/>
+            </intent-filter>
         </activity>
-        
+
+        <!-- Image cropper activity -->
+        <activity
+            android:name="com.yalantis.ucrop.UCropActivity"
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.AppCompat.Light.NoActionBar"/>
+
         <!-- FileProvider for sharing APK files on Android 7.0+ -->
         <provider
             android:name="androidx.core.content.FileProvider"
@@ -91,7 +122,8 @@
         </receiver>
 
         <!-- 桌面小组件 -->
-        <receiver android:name="com.example.beecount.BeeCountWidgetProvider"
+        <receiver android:name="com.tntlikely.beecount.BeeCountWidgetProvider"
+            android:label="@string/widget_name"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
@@ -99,6 +131,133 @@
             <meta-data
                 android:name="android.appwidget.provider"
                 android:resource="@xml/beecount_widget_info" />
+        </receiver>
+
+        <!-- 桌面小组件:收支速览·小号(补全:老 provider 只有中号且不可改动,
+             小号独立成类,见 BeeCountGlanceSmallWidgetProvider 注释) -->
+        <receiver android:name=".BeeCountGlanceSmallWidgetProvider"
+            android:label="@string/widget_glance_small_name"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/glance_small_widget_info" />
+        </receiver>
+
+        <!-- 桌面小组件:净资产 -->
+        <receiver android:name=".BeeCountNetWorthWidgetProvider"
+            android:label="@string/widget_networth_name"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/net_worth_widget_info" />
+        </receiver>
+
+        <!-- 桌面小组件:快速记账 -->
+        <receiver android:name=".BeeCountQuickAddWidgetProvider"
+            android:label="@string/widget_quickadd_name"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/quick_add_widget_info" />
+        </receiver>
+
+        <!-- 桌面小组件:预算进度 -->
+        <receiver android:name=".BeeCountBudgetWidgetProvider"
+            android:label="@string/widget_budget_name"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/budget_widget_info" />
+        </receiver>
+
+        <!-- 桌面小组件:最近交易 -->
+        <receiver android:name=".BeeCountRecentWidgetProvider"
+            android:label="@string/widget_recent_name"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/recent_widget_info" />
+        </receiver>
+
+        <!-- 桌面小组件:按尺寸拆分的入口(空子类复用父类逻辑,见
+             BeeCountSizedWidgetProviders.kt 注释——Android 选择器不按尺寸
+             分档,不拆 provider 中/大档位对用户形同不存在) -->
+        <receiver android:name=".BeeCountNetWorthMediumWidgetProvider"
+            android:label="@string/widget_networth_medium_name"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/net_worth_medium_widget_info" />
+        </receiver>
+        <receiver android:name=".BeeCountNetWorthLargeWidgetProvider"
+            android:label="@string/widget_networth_large_name"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/net_worth_large_widget_info" />
+        </receiver>
+        <receiver android:name=".BeeCountBudgetMediumWidgetProvider"
+            android:label="@string/widget_budget_medium_name"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/budget_medium_widget_info" />
+        </receiver>
+        <receiver android:name=".BeeCountQuickAddMediumWidgetProvider"
+            android:label="@string/widget_quickadd_medium_name"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/quick_add_medium_widget_info" />
+        </receiver>
+        <receiver android:name=".BeeCountRecentLargeWidgetProvider"
+            android:label="@string/widget_recent_large_name"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/recent_large_widget_info" />
+        </receiver>
+
+        <!-- 桌面小组件:综合仪表盘 -->
+        <receiver android:name=".BeeCountDashboardWidgetProvider"
+            android:label="@string/widget_dashboard_name"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/dashboard_widget_info" />
         </receiver>
 
     </application>
@@ -120,6 +279,12 @@
         <intent>
             <action android:name="android.intent.action.VIEW" />
             <data android:scheme="http" />
+        </intent>
+        <!-- Required for opening mailto: links (Android 11+ package visibility).
+             少了这条,canLaunchUrl(mailto:) 强制返 false,「申请内测」按钮静默无反应。 -->
+        <intent>
+            <action android:name="android.intent.action.SENDTO" />
+            <data android:scheme="mailto" />
         </intent>
     </queries>
 </manifest>
